@@ -75,7 +75,7 @@ private:
   inline std::string colorize(std::string_view) &;
   inline std::string unixtime()           const &;
   inline std::string time()               const &;
-  inline void        log()                      &;
+  inline void        logging()                  &;
 
 #if !defined(__linux__) && !defined(__FreeBSD__)
   constexpr

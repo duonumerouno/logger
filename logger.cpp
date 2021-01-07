@@ -29,7 +29,7 @@ std::string logger::time() const &
 
 std::string logger::unixtime() const &
 {
-  return std::to_string(std::time(nullptr));
+  return "[" + std::to_string(std::time(nullptr)) + "]";
 }
 
 #if !defined(__linux__) && !defined(__FreeBSD__)
@@ -86,7 +86,7 @@ std::string logger::colorize(std::string_view text) &
   return std::string { begin_color() } + std::string { text } + std::string { end_color() };
 }
 
-void logger::log() &
+void logger::logging() &
 {
   std::string source;
   (((flags & logflag::unixtime) > 0))
@@ -99,6 +99,7 @@ void logger::log() &
   }
   if (!((flags & logflag::nostdout) > 0))
   {
+    std::cout.flush();
     std::cout << colorize(source);
   }
 
@@ -116,5 +117,5 @@ logger::~logger()
   static std::mutex mtx;
   std::lock_guard<decltype(mtx)> guard(mtx);
   if (ss.rdbuf()->in_avail())
-    log();
+    logging();
 }
