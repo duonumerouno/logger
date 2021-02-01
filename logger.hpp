@@ -5,121 +5,165 @@
 
 enum class logflag : std::uint32_t
 {
-  info                = (1 << 0),
-  debug               = (1 << 1),
-  warn                = (1 << 2),
-  error               = (1 << 3),
-  nostdout            = (1 << 4),
-  spaces              = (1 << 5),
-  newline             = (1 << 6),
-  round_brackets      = (1 << 7),
-  box_bracekts        = (1 << 8),
-  curly_brackets      = (1 << 9),
-  chevrons            = (1 << 10),
-  unixtime            = (1 << 11),
-  no_sync_with_stdio  = (1 << 12),
+    info                = (1 << 0),
+    debug               = (1 << 1),
+    warn                = (1 << 2),
+    error               = (1 << 3),
+    nostdout            = (1 << 4),
+    spaces              = (1 << 5),
+    newline             = (1 << 6),
+    round_brackets      = (1 << 7),
+    box_bracekts        = (1 << 8),
+    curly_brackets      = (1 << 9),
+    chevrons            = (1 << 10),
+    unixtime            = (1 << 11),
+    no_sync_with_stdio  = (1 << 12),
+    flush               = (1 << 13),
 #if defined(__linux__) || defined(__FreeBSD__)
-  red                 = (1 << 13),
-  green               = (1 << 14),
-  yellow              = (1 << 15),
-  purple              = (1 << 16),
-  gray                = (1 << 17)
+    red                 = (1 << 14),
+    green               = (1 << 15),
+    yellow              = (1 << 16),
+    purple              = (1 << 17),
+    gray                = (1 << 18)
 #endif
 };
 
 inline logflag operator | (logflag lhs, logflag rhs) noexcept
 {
-  return static_cast<logflag>(static_cast<std::uint32_t>(lhs) | static_cast<std::uint32_t>(rhs));
+    return static_cast<logflag>(static_cast<std::uint32_t>(lhs) | static_cast<std::uint32_t>(rhs));
 }
 
 inline std::uint32_t operator |= (std::uint32_t& lhs, logflag rhs) noexcept
 {
-  return lhs |= static_cast<std::uint32_t>(rhs);
+    return lhs |= static_cast<std::uint32_t>(rhs);
 }
 
 inline std::uint32_t operator &= (std::uint32_t& lhs, logflag rhs) noexcept
 {
-  return lhs &= static_cast<std::uint32_t>(rhs);
+    return lhs &= static_cast<std::uint32_t>(rhs);
 }
 
 inline std::uint32_t operator ~ (logflag lhs) noexcept
 {
-  return ~static_cast<std::uint32_t>(lhs);
+    return ~static_cast<std::uint32_t>(lhs);
 }
 
 inline std::uint32_t operator & (std::uint32_t lhs, logflag rhs) noexcept
 {
-  return lhs & static_cast<std::uint32_t>(rhs);
+    return lhs & static_cast<std::uint32_t>(rhs);
 }
 
 class logger
 {
 public:
-  logger()                          = delete;
-  logger(const logger&)             = delete;
-  logger(logger&&)                  = delete;
-  logger& operator=(logger&&)       = delete;
-  logger& operator=(const logger&)  = delete;
+    logger()                            = delete;
+    logger(const logger&)               = delete;
+    logger(logger&&)                    = delete;
+    logger& operator = (logger&&)       = delete;
+    logger& operator = (const logger&)  = delete;
 
-  explicit logger(logflag);
-  explicit logger(std::string_view, logflag);
-  ~logger();
+    explicit logger(logflag);
+    explicit logger(std::string_view, logflag);
+    ~logger();
 
-  template <typename T>
-  inline logger&  operator<<(T&& data) & = delete;
-  template <typename T>
-  inline logger&& operator<<(T&& data) &&;
+    template <typename T>
+    logger&  operator << (T&& data) & = delete;
+    template <typename T>
+    logger&& operator << (T&& data) &&;
+    template <typename... Args>
+    void print_pack(Args&&... args);
 
 private:
-  inline std::string type()                     & noexcept;
-  inline std::string colorize(std::string_view) &;
-  inline std::string unixtime()           const &;
-  inline std::string time()               const &;
-  inline void        logging()                  &;
+    inline std::string type() noexcept;
+    inline std::string colorize(std::string_view);
+    inline std::string unixtime() const;
+    inline std::string time() const;
+           void        logging();
+
+    template <typename First>
+    void append_elements(First&& first);
+    template <typename First, typename... Rest>
+    void append_elements(First&& first, Rest&&... rest);
+    template <typename T>
+    void append_element(T&& element);
 
 #if !defined(__linux__) && !defined(__FreeBSD__)
-  constexpr
+    constexpr
 #endif
-  inline std::string_view begin_color()   const & noexcept;
+    inline std::string_view begin_color()   const noexcept;
 
 #if !defined(__linux__) && !defined(__FreeBSD__)
-  constexpr
+    constexpr
 #endif
-  inline std::string_view end_color()     const & noexcept;
+    inline std::string_view end_color()     const noexcept;
 
-  static inline
-  std::stringstream   ss;
-  std::uint32_t       flags;
-  std::string_view    path;
+    static inline
+    std::stringstream   ss;
+    std::uint32_t       flags;
+    std::string_view    path;
 
 #if defined(__linux__) || defined(__FreeBSD__)
-  static inline constexpr std::string_view red    = "\033[0;31m";
-  static inline constexpr std::string_view green  = "\033[0;32m";
-  static inline constexpr std::string_view yellow = "\033[0;33m";
-  static inline constexpr std::string_view purple = "\033[0;35m";
-  static inline constexpr std::string_view gray   = "\033[0;90m";
-  static inline constexpr std::string_view eoc    = "\033[0;0m";
+    static inline constexpr std::string_view red    = "\033[0;31m";
+    static inline constexpr std::string_view green  = "\033[0;32m";
+    static inline constexpr std::string_view yellow = "\033[0;33m";
+    static inline constexpr std::string_view purple = "\033[0;35m";
+    static inline constexpr std::string_view gray   = "\033[0;90m";
+    static inline constexpr std::string_view eoc    = "\033[0;0m";
 #endif
 };
 
-template<typename T>
-inline logger&& logger::operator<<(T&& data) &&
+template <typename T>
+void logger::append_element(T&& element)
 {
-  if ( (flags & logflag::newline         ) > 0) ss << '\n';
+    if ( (flags & logflag::newline         ) > 0) ss << '\n';
 
-  if ( (flags & logflag::box_bracekts    ) > 0) ss << '[';
-  if ( (flags & logflag::chevrons        ) > 0) ss << '<';
-  if ( (flags & logflag::curly_brackets  ) > 0) ss << '{';
-  if ( (flags & logflag::round_brackets  ) > 0) ss << '(';
+    if ( (flags & logflag::box_bracekts    ) > 0) ss << '[';
+    if ( (flags & logflag::chevrons        ) > 0) ss << '<';
+    if ( (flags & logflag::curly_brackets  ) > 0) ss << '{';
+    if ( (flags & logflag::round_brackets  ) > 0) ss << '(';
 
-  ss << data;
+    ss << element;
 
-  if ( (flags & logflag::round_brackets  ) > 0) ss << ')';
-  if ( (flags & logflag::curly_brackets  ) > 0) ss << '}';
-  if ( (flags & logflag::chevrons        ) > 0) ss << '>';
-  if ( (flags & logflag::box_bracekts    ) > 0) ss << ']';
+    if ( (flags & logflag::round_brackets  ) > 0) ss << ')';
+    if ( (flags & logflag::curly_brackets  ) > 0) ss << '}';
+    if ( (flags & logflag::chevrons        ) > 0) ss << '>';
+    if ( (flags & logflag::box_bracekts    ) > 0) ss << ']';
 
-  if ( (flags & logflag::spaces          ) > 0) ss << ' ';
+    if ( (flags & logflag::spaces          ) > 0) ss << ' ';
 
-  return std::move(*this);
+}
+
+template<typename T>
+logger&& logger::operator << (T&& data) &&
+{
+    append_element(data);
+
+    if ((flags & logflag::flush) > 0)
+    {
+        logging();
+    }
+    return std::move(*this);
+}
+
+template <typename First>
+void logger::append_elements(First&& value)
+{
+    append_element(value);
+}
+
+template <typename First, typename... Rest>
+void logger::append_elements(First&& first, Rest&&... rest)
+{
+    append_element(first);
+    append_elements(rest...);
+}
+
+template <typename... Args>
+void logger::print_pack(Args&&... args)
+{
+    append_elements(args...);
+    if ( (flags & logflag::flush) > 0)
+    {
+        logging();
+    }
 }
