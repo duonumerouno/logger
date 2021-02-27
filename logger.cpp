@@ -104,7 +104,7 @@ void logger::logging()
     }
     if (!path.empty())
     {
-        static std::ofstream ofs(path.data(), std::ios::app);
+        std::ofstream ofs(path.data(), std::ios::app);
         ofs.write(source.c_str(), source.size());
     }
     ss.str("");
